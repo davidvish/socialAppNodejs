@@ -3,6 +3,8 @@ const app = express();
 //API export calls
 const userRouter = require('./router/users')
 const authRouter = require('./router/auth')
+const postRouter = require('./router/post')
+
 
 
 const morgan = require("morgan");
@@ -22,6 +24,8 @@ dotevn.config();
 //API Url 
 app.use("/social/api/users",userRouter)
 app.use("/social/api/auth",authRouter)
+app.use("/social/api/post",postRouter)
+
 
 
 mongoose
