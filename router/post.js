@@ -2,12 +2,16 @@ const Post = require("../models/Post");
 const User = require("../models/User");
 
 const router = require("express").Router();
+const upload = require("../middleware/upload");
 
 //add post
 
-router.post("/add", async (req, res) => {
+router.post("/add", upload.single("imageUrl"), async (req, res) => {
   try {
     const newPost = new Post(req.body);
+    if (req.file) {
+      newPost.imageUrl = req.file.filename;
+    }
     newPost
       .save()
       .then(() => {
@@ -115,76 +119,29 @@ router.get("/getPost/:id", async (req, res) => {
   }
 });
 
-//follow
-
-router.put("/follow/:id", async (req, res) => {
+router.put("/like/:id", async (req, res) => {
   try {
-    const user = await User.findOne({ _id: req.params.id });
-    const currentUser = User.findOne({ _id: req.body.userId });
-    let isFollowed = false;
-    user.followers.map((item) => {
+    const post = await Post.findOne({ _id: req.params.id });
+    let isLiked = false;
+    post.likes.map((item) => {
       if (item == req.body.userId) {
-        isFollowed = true;
+        isLiked = true;
       }
     });
-    if (isFollowed) {
+    if (isLiked) {
+      const res1 = await Post.updateOne(
+        { _id: req.params.id },
+        { $pull: { likes: req.body.userId } }
+      );
       res
         .status(200)
-        .json({ status: false, message: "Already you followed this user" });
+        .json({ status: true, message: "like remove successfully" });
     } else {
-      const res1 = await User.updateOne(
-        {
-          _id: req.params.id,
-        },
-        { $push: { followers: req.body.userId } }
+      const res2 = await Post.updateOne(
+        { _id: req.params.id },
+        { $push: { likes: req.body.userId } }
       );
-      const res2 = await User.updateOne(
-        {
-          _id: req.body.userId,
-        },
-        { $push: { following: req.params.id } }
-      );
-      res
-        .status(200)
-        .json({ status: true, message: "followed user successfully" });
-    }
-  } catch (error) {
-    res.status(500).json(error);
-  }
-});
-
-//Unfollow
-
-router.put("/unfollow/:id", async (req, res) => {
-  try {
-    const user = await User.findOne({ _id: req.params.id });
-    const currentUser = await User.findOne({ _id: req.body.userId });
-    let isFollowed = false;
-    user.followers.map((item) => {
-      if (item == req.body.userId) {
-        isFollowed = true;
-      }
-    });
-    if (!isFollowed) {
-      res
-        .status(200)
-        .json({ status: false, message: "You are not following this user" });
-    } else {
-      const res1 = await User.updateOne(
-        {
-          _id: req.params.id,
-        },
-        { $pull: { followers: req.body.userId } }
-      );
-      const res2 = await User.updateOne(
-        {
-          _id: req.body.userId,
-        },
-        { $pull: { following: req.params.id } }
-      );
-      res
-        .status(200)
-        .json({ status: true, message: "unfollowed user successfully" });
+      res.status(200).json({ status: true, message: "post like successfully" });
     }
   } catch (error) {
     res.status(500).json(error);

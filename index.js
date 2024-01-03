@@ -4,6 +4,8 @@ const app = express();
 const userRouter = require('./router/users')
 const authRouter = require('./router/auth')
 const postRouter = require('./router/post')
+const commentRouter = require('./router/comment')
+
 
 
 
@@ -25,6 +27,7 @@ dotevn.config();
 app.use("/social/api/users",userRouter)
 app.use("/social/api/auth",authRouter)
 app.use("/social/api/post",postRouter)
+app.use("/social/api/post/comment",commentRouter)
 
 
 

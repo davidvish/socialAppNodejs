@@ -65,11 +65,128 @@ router.get("/get", async (req, res) => {
 router.get("/getUser/:id", async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.params.id });
-    user && res.status(200).json({ status: true, message: "user fetch by id",data:user });
-    !user && res.status(200).json({status:false,message:'User not found by id'})
+    user &&
+      res
+        .status(200)
+        .json({ status: true, message: "user fetch by id", data: user });
+    !user &&
+      res.status(200).json({ status: false, message: "User not found by id" });
   } catch (error) {
     res.status(500).json(error);
   }
 });
+//follow
+
+router.put("/follow/:id", async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.params.id });
+    const currentUser = User.findOne({ _id: req.body.userId });
+    let isFollowed = false;
+    user.followers.map((item) => {
+      if (item == req.body.userId) {
+        isFollowed = true;
+      }
+    });
+    if (isFollowed) {
+      res
+        .status(200)
+        .json({ status: false, message: "Already you followed this user" });
+    } else {
+      const res1 = await User.updateOne(
+        {
+          _id: req.params.id,
+        },
+        { $push: { followers: req.body.userId } }
+      );
+      const res2 = await User.updateOne(
+        {
+          _id: req.body.userId,
+        },
+        { $push: { following: req.params.id } }
+      );
+      res
+        .status(200)
+        .json({ status: true, message: "followed user successfully" });
+    }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+// //Unfollow
+
+router.put("/unfollow/:id", async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.params.id });
+    const currentUser = await User.findOne({ _id: req.body.userId });
+    let isFollowed = false;
+    user.followers.map((item) => {
+      if (item == req.body.userId) {
+        isFollowed = true;
+      }
+    });
+    if (!isFollowed) {
+      res
+        .status(200)
+        .json({ status: false, message: "You are not following this user" });
+    } else {
+      const res1 = await User.updateOne(
+        {
+          _id: req.params.id,
+        },
+        { $pull: { followers: req.body.userId } }
+      );
+      const res2 = await User.updateOne(
+        {
+          _id: req.body.userId,
+        },
+        { $pull: { following: req.params.id } }
+      );
+      res
+        .status(200)
+        .json({ status: true, message: "unfollowed user successfully" });
+    }
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+// router.put("/follow/:id", async (req, res) => {
+//  try {
+//   const user = await User.findOne({ _id: req.params.id });
+//   let follower = false;
+//   user.followers.map((item) => {
+//     if (item == req.body.userId) {
+//       follower = true;
+//     }
+//   });
+//   if (follower) {
+//     const res1 = await User.updateOne(
+//       {
+//         _id: req.params.id,
+//       },
+//       { $pull: { following:req.body.userId} }
+//     );
+//     res
+//       .status(200)
+//       .json({ status: true, message: "followed user successfully" });
+//   } else {
+//     const res2 = await User.updateOne(
+//       {
+//         _id: req.params.id,
+//       },
+//       { $push: { followers:req.body.userId} }
+//     );
+//     res
+//       .status(200)
+//       .json({ status: true, message: "unfollowed user successfully" });
+//   }
+//  } catch (error) {
+//   res
+//   .status(500)
+//   .json(error);
+
+//  }
+// });
 
 module.exports = router;
