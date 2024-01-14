@@ -30,15 +30,27 @@ app.use("/social/api/post",postRouter)
 app.use("/social/api/post/comment",commentRouter)
 
 
+const PORT = process.env.PORT || 3000
 
-mongoose
-  .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
+}
+//Routes go here
+app.all('*', (req,res) => {
+  res.json({"every thing":"is awesome"})
+})
+
+//Connect to the database before listening
+connectDB().then(() => {
+  app.listen(PORT, () => {
+      console.log("listening for requests");
   })
-  .then(() => {
-    console.log("Mogodb database is connet");
-  });
-app.listen(8200, () => {
-  console.log("node connection checking check port " + 8200);
-});
+})
+
+
