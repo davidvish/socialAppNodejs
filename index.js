@@ -7,11 +7,12 @@ const postRouter = require('./router/post')
 const commentRouter = require('./router/comment')
 
 
+const PORT = process.env.PORT || 3000;
 
 
 const morgan = require("morgan");
 const dotevn = require("dotenv");
-const mongoose = require("mongoose");
+const mongoos = require("mongoose");
 const helmet = require("helmet");
 const nodemon = require("nodemon");
 
@@ -31,14 +32,28 @@ app.use("/social/api/post/comment",commentRouter)
 
 
 
-mongoose
-  .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("Mogodb database is connet");
-  });
-app.listen(8200, () => {
-  console.log("node connection checking check port " + 8200);
+mongoos.set("strictQuery", false);
+const connectDB = async () => {
+  try {
+    const conn = await mongoos.connect(process.env.MONGO_URL);
+    console.log(`Mongodb connected : ${conn.connection.host}`);
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
+};
+
+app.get("/", (req, res) => {
+  res.send({ title: "Social App Backend" });
 });
+
+
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Listening on Port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.log(err);
+  });
