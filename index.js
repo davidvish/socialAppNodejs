@@ -44,7 +44,7 @@ const connectDB = async () => {
 };
 
 app.get("/", (req, res) => {
-  res.send({ title: "Social App Backend" });
+  res.send({ title: "Welcome back to Social Connect" });
 });
 
 
